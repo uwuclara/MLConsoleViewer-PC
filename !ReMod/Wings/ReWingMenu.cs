@@ -1,0 +1,135 @@
+﻿using System;
+using TMPro;
+using UnityEngine;
+using UnityEngine.UI;
+using VRC.UI.Elements;
+using Object = UnityEngine.Object;
+
+namespace ReModAPI.Wings
+{
+    [Flags]
+    public enum WingSide
+    {
+        Left = (1 << 0),
+        Right = (1 << 1),
+        Both = Left | Right
+    }
+
+    public class ReWingMenu : UiElement
+    {
+        private static GameObject _wingMenuPrefab;
+
+        private static GameObject WingMenuPrefab
+        {
+            get
+            {
+                if (_wingMenuPrefab == null)
+                {
+                    _wingMenuPrefab = MenuEx.LeftWing.transform.Find("Container/InnerContainer/WingMenu").gameObject;
+                }
+                return _wingMenuPrefab;
+            }
+        }
+
+        public Transform Container { get; }
+
+        private readonly bool WingType;
+        private readonly GameObject _wing;
+        private readonly string _menuName;
+
+        public ReWingMenu(string text, bool left = true) : base(WingMenuPrefab, (left ? MenuEx.LeftWing : MenuEx.RightWing).transform.Find("Container/InnerContainer/"), text, false)
+        {
+            _menuName = GetCleanName(text);
+            WingType = left;
+            _wing = WingType ? MenuEx.LeftWing : MenuEx.RightWing;
+
+            var headerTransform = RectTransform.GetChild(0);
+            var titleText = headerTransform.GetComponentInChildren<TextMeshProUGUI>();
+            titleText.text = text;
+            titleText.richText = true;
+
+            var backButton = headerTransform.GetComponentInChildren<Button>(true);
+            backButton.gameObject.SetActive(true);
+
+            var backIcon = backButton.transform.Find("Icon");
+            backIcon.gameObject.SetActive(true);
+            var components = new Il2CppSystem.Collections.Generic.List<Behaviour>();
+            backButton.GetComponents(components);
+
+            foreach (var comp in components)
+            {
+                comp.enabled = true;
+            }
+
+            var content = RectTransform.GetComponentInChildren<ScrollRect>().content;
+            foreach (var obj in content)
+            {
+                var control = obj.Cast<Transform>();
+                if (control == null)
+                {
+                    continue;
+                }
+
+                Object.Destroy(control.gameObject);
+            }
+
+            Container = content;
+
+            var menuStateCtrl = _wing.GetComponent<MenuStateController>();
+
+            var uiPage = GameObject.GetComponent<UIPage>();
+            uiPage.field_Public_String_0 = _menuName;
+            uiPage.field_Protected_MenuStateController_0 = menuStateCtrl;
+            uiPage.field_Private_List_1_UIPage_0 = new Il2CppSystem.Collections.Generic.List<UIPage>();
+            uiPage.field_Private_List_1_UIPage_0.Add(uiPage); // what is this for? I forgot
+
+            menuStateCtrl.field_Private_Dictionary_2_String_UIPage_0.Add(uiPage.field_Public_String_0, uiPage);
+        }
+
+        public void Open()
+        {
+            if (!GameObject)
+                throw new NullReferenceException("This wing menu has been destroyed.");
+
+            _wing.GetComponent<MenuStateController>().Method_Public_Void_String_UIContext_Boolean_TransitionType_0(_menuName);
+        }                                          
+
+        public ReWingButton AddButton(string text, string tooltip, Action onClick, Sprite sprite = null, bool arrow = true, bool background = true, bool separator = false)
+        {
+            if (!GameObject)
+                throw new NullReferenceException("This wing menu has been destroyed.");
+
+            return new ReWingButton(text, tooltip, onClick, Container, sprite, arrow, background, separator);
+        }
+
+        public ReWingToggle AddToggle(string text, string tooltip, Action<bool> onToggle, bool defaultValue = false)
+        {
+            if (!GameObject)
+                throw new NullReferenceException("This wing menu has been destroyed.");
+
+            return new ReWingToggle(text, tooltip, onToggle, Container, defaultValue);
+        }
+
+        public ReWingMenu AddSubMenu(string text, string tooltip)
+        {
+            if (!GameObject)
+                throw new NullReferenceException("This wing menu has been destroyed.");
+
+            var menu = new ReWingMenu(text, WingType);
+            AddButton(text, tooltip, menu.Open);
+            return menu;
+        }
+
+        public override void Destroy()
+        {
+            if (!GameObject)
+                return;
+
+            var menuStateCtrl = _wing.GetComponent<MenuStateController>();
+            var uiPage = GameObject.GetComponent<UIPage>();
+            menuStateCtrl.field_Private_Dictionary_2_String_UIPage_0.Remove(uiPage.field_Public_String_0);
+
+            UnityEngine.Object.Destroy(GameObject);
+        }
+    }
+}

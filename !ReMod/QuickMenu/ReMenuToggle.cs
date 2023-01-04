@@ -1,0 +1,223 @@
+﻿using Il2CppSystem.Reflection;
+using MelonLoader;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using TMPro;
+using UnhollowerBaseLib.Attributes;
+using UnhollowerRuntimeLib;
+using UnityEngine;
+using UnityEngine.UI;
+using VRC.UI.Core.Styles;
+using Object = UnityEngine.Object;
+
+namespace ReModAPI.QuickMenu
+{
+    public class ReMenuToggle : UiElement
+    {
+        private readonly Toggle _toggleComponent;
+
+        public bool Interactable
+        {
+            get => _toggleComponent.interactable;
+            set
+            {
+                _toggleComponent.interactable = value;
+
+                if (_toggleStyleElement != null)
+                    _toggleStyleElement.OnEnable();
+            }
+        }
+
+        private bool _valueHolder;
+        public bool Value
+        {
+            get => _valueHolder;
+            set => Toggle(value);
+        }
+
+        private StyleElement _toggleStyleElement;
+
+        private object _toggleIcon;
+
+        private TextMeshProUGUI _textComponent;
+        public string Text
+        {
+            get => _textComponent.text;
+            set => _textComponent.text = value;
+        }
+
+        private VRC.UI.Elements.Tooltips.UIToggleTooltip _tooltip;
+
+        public string Tooltip
+        {
+            get => _tooltip != null ? _tooltip.field_Public_String_0 : "";
+            set
+            {
+                if (_tooltip == null) return;
+                _tooltip.field_Public_String_0 = value;
+                _tooltip.field_Public_String_1 = value;
+            }
+        }
+        public ReMenuToggle(string text, string tooltip, Action<bool> onToggle, Transform parent, bool defaultValue = false) : this(text, tooltip, onToggle, parent, defaultValue, null, null) { }
+        public ReMenuToggle(string text, string tooltip, Action<bool> onToggle, Transform parent, bool defaultValue = false, Sprite iconOn = null, Sprite iconOff = null) : base(MenuEx.TogglePrefab, parent, $"Button_Toggle{text}")
+        {
+            var icon = RectTransform.Find("Icon_On").GetComponent<Image>();
+            icon.sprite = iconOn ?? MenuEx.OnIconSprite;
+            icon = RectTransform.Find("Icon_Off").GetComponent<Image>();
+            icon.sprite = iconOff ?? MenuEx.OffIconSprite;
+
+            Object.DestroyImmediate(GameObject.GetComponent<UIInvisibleGraphic>()); // Fix for having clickable area overlap main quickmenu ui
+
+            FindToggleIcon();
+
+            _toggleComponent = GameObject.GetComponent<Toggle>();
+            _toggleComponent.onValueChanged = new Toggle.ToggleEvent();
+            _toggleComponent.onValueChanged.AddListener(new Action<bool>(OnValueChanged));
+            _toggleComponent.onValueChanged.AddListener(new Action<bool>(onToggle));
+
+            _toggleStyleElement = GameObject.GetComponent<StyleElement>();
+
+            _textComponent = GameObject.GetComponentInChildren<TextMeshProUGUI>();
+            _textComponent.text = text;
+            _textComponent.richText = true;
+            _textComponent.color = new Color(0.4157f, 0.8902f, 0.9765f, 1f);
+            _textComponent.m_fontColor = new Color(0.4157f, 0.8902f, 0.9765f, 1f);
+            _textComponent.m_htmlColor = new Color(0.4157f, 0.8902f, 0.9765f, 1f);
+
+            _tooltip = GameObject.GetComponent<VRC.UI.Elements.Tooltips.UIToggleTooltip>();
+            _tooltip.field_Public_String_0 = tooltip;
+            _tooltip.field_Public_String_1 = tooltip;
+
+            Toggle(defaultValue, false);
+
+            var edl = GameObject.AddComponent<EnableDisableListener>();
+            edl.OnEnableEvent += UpdateToggleIfNeeded;
+        }
+
+        public ReMenuToggle(Transform transform) : base(transform)
+        {
+            FindToggleIcon();
+            _toggleComponent = GameObject.GetComponent<Toggle>();
+        }
+
+        public void Toggle(bool value, bool callback = true, bool updateVisually = false)
+        {
+            _valueHolder = value;
+            _toggleComponent.Set(value, callback);
+            if (updateVisually)
+            {
+                UpdateToggleIfNeeded();
+            }
+        }
+        private void UpdateToggleIfNeeded()
+        {
+            OnValueChanged(_valueHolder);
+        }
+
+        private void FindToggleIcon()
+        {
+            var components = new Il2CppSystem.Collections.Generic.List<Component>();
+            GameObject.GetComponents(components);
+
+            foreach (var c in components)
+            {
+                var il2CppType = c.GetIl2CppType();
+                var il2CppFields = il2CppType.GetFields(BindingFlags.Public | BindingFlags.Instance);
+                if (il2CppFields.Count != 1)
+                    continue;
+
+                if (!il2CppFields.Any(t => t.IsPublic && t.FieldType == Il2CppType.Of<Toggle>()))
+                    continue;
+
+                var realType = GetUnhollowedType(il2CppType);
+                if (realType == null)
+                {
+                    MelonLogger.Error("SHITS FUCKED!");
+                    break;
+                }
+                _toggleIcon = Activator.CreateInstance(realType, c.Pointer);
+                break;
+            }
+        }
+
+        private List<Action> _onValueChanged;
+
+        private void OnValueChanged(bool arg0)
+        {
+            if (_onValueChanged == null)
+            {
+                _onValueChanged = new List<Action>();
+                foreach (var methodInfo in _toggleIcon.GetType().GetMethods().Where(m =>
+                             m.Name.StartsWith("Method_Public_Void_") && XrefUtils.CheckMethod(m, "Toggled")))
+                {
+                    _onValueChanged.Add((Action)Delegate.CreateDelegate(typeof(Action), _toggleIcon, methodInfo));
+                }
+            }
+            _valueHolder = arg0;
+            foreach (var onValueChanged in _onValueChanged)
+            {
+                onValueChanged();
+            }
+        }
+
+
+        private static readonly Dictionary<string, Type> DeobfuscatedTypes = new Dictionary<string, Type>();
+        private static readonly Dictionary<string, string> ReverseDeobCache = new Dictionary<string, string>();
+
+        private static void BuildDeobfuscationCache()
+        {
+            if (DeobfuscatedTypes.Count > 0)
+                return;
+
+            foreach (var asm in AppDomain.CurrentDomain.GetAssemblies())
+            {
+                foreach (var type in asm.TryGetTypes())
+                    TryCacheDeobfuscatedType(type);
+            }
+        }
+
+        private static void TryCacheDeobfuscatedType(Type type)
+        {
+            try
+            {
+                if (!type.CustomAttributes.Any())
+                    return;
+
+                foreach (var att in type.CustomAttributes)
+                {
+                    // Thanks to Slaynash for this
+
+                    if (att.AttributeType == typeof(ObfuscatedNameAttribute))
+                    {
+                        string obfuscatedName = att.ConstructorArguments[0].Value.ToString();
+
+                        DeobfuscatedTypes.Add(obfuscatedName, type);
+                        ReverseDeobCache.Add(type.FullName, obfuscatedName);
+                    }
+                }
+            }
+            catch
+            {
+                // ignored
+            }
+        }
+        public static Type GetUnhollowedType(Il2CppSystem.Type cppType)
+        {
+            if (DeobfuscatedTypes.Count == 0)
+            {
+                BuildDeobfuscationCache();
+            }
+
+            var fullname = cppType.FullName;
+
+            if (DeobfuscatedTypes.TryGetValue(fullname, out var deob))
+                return deob;
+
+            if (fullname.StartsWith("System."))
+                fullname = $"Il2Cpp{fullname}";
+
+            return null;
+        }
+    }
+}

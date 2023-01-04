@@ -1,0 +1,84 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+        <TargetFramework>net472</TargetFramework>
+		<LangVersion>default</LangVersion>
+        <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+        <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+        <DebugType>none</DebugType>
+        <DebugSymbols>false</DebugSymbols>
+        <ClearOutputDirectory>True</ClearOutputDirectory>
+        <OutputPath>$(MsBuildThisFileDirectory)Output</OutputPath>
+		<MelonManaged Condition="Exists('E:\MelonLoader-pc\Managed')">E:\MelonLoader-pc\Managed</MelonManaged>
+	</PropertyGroup>
+	<ItemGroup>
+        <EmbeddedResource Include="console-pc" />
+		<Reference Include="System" />
+		<Reference Include="Microsoft.CSharp" />
+		<Reference Include="Assembly-CSharp">
+			<HintPath>$(MelonManaged)\Assembly-CSharp.dll</HintPath>
+			<Private>False</Private>
+		</Reference>
+		<Reference Include="Il2CppSystem">
+			<HintPath>$(MelonManaged)\Il2CppSystem.dll</HintPath>
+			<Private>False</Private>
+		</Reference>
+		<Reference Include="Il2Cppmscorlib">
+			<HintPath>$(MelonManaged)\Il2Cppmscorlib.dll</HintPath>
+			<Private>False</Private>
+		</Reference>
+		<Reference Include="MelonLoader">
+			<HintPath>$(MelonManaged)\..\MelonLoader.dll</HintPath>
+			<Private>False</Private>
+		</Reference>
+		<Reference Include="UnhollowerBaseLib">
+			<HintPath>$(MelonManaged)\UnhollowerBaseLib.dll</HintPath>
+			<Private>False</Private>
+		</Reference>
+		<Reference Include="UnityEngine">
+			<HintPath>$(MelonManaged)\UnityEngine.dll</HintPath>
+			<Private>False</Private>
+		</Reference>
+		<Reference Include="UnityEngine.CoreModule">
+			<HintPath>$(MelonManaged)\UnityEngine.CoreModule.dll</HintPath>
+			<Private>False</Private>
+		</Reference>
+		<Reference Include="UnityEngine.VRModule">
+			<HintPath>$(MelonManaged)\UnityEngine.VRModule.dll</HintPath>
+			<Private>False</Private>
+		</Reference>
+		<Reference Include="DataModel">
+		  <HintPath>$(MelonManaged)\DataModel.dll</HintPath>
+		</Reference>
+		<Reference Include="UnityEngine.TextRenderingModule">
+		  <HintPath>$(MelonManaged)\UnityEngine.TextRenderingModule.dll</HintPath>
+		</Reference>
+		<Reference Include="UnityEngine.ImageConversionModule">
+			<HintPath>$(MelonManaged)\UnityEngine.ImageConversionModule.dll</HintPath>
+		</Reference>
+		<Reference Include="UnityEngine.AssetBundleModule">
+			<HintPath>$(MelonManaged)\UnityEngine.AssetBundleModule.dll</HintPath>
+			<Private>False</Private>
+		</Reference>
+		<Reference Include="UnityEngine.UI">
+			<HintPath>$(MelonManaged)\UnityEngine.UI.dll</HintPath>
+			<Private>False</Private>
+		</Reference>
+		<Reference Include="Unity.TextMeshPro">
+			<HintPath>$(MelonManaged)\Unity.TextMeshPro.dll</HintPath>
+			<Private>False</Private>
+		</Reference>
+        <Reference Include="VRCCore-Standalone">
+            <HintPath>$(MelonManaged)\VRCCore-Standalone.dll</HintPath>
+            <Private>False</Private>
+        </Reference>
+        <Reference Include="VRC.UI.Core">
+            <HintPath>$(MelonManaged)\VRC.UI.Core.dll</HintPath>
+            <Private>False</Private>
+        </Reference>
+        <Reference Include="VRC.UI.Elements">
+            <HintPath>$(MelonManaged)\VRC.UI.Elements.dll</HintPath>
+            <Private>False</Private>
+        </Reference>
+
+	</ItemGroup>
+</Project>	
