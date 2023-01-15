@@ -21,7 +21,7 @@ public static class BuildShit
 {
     public const string Name = "MLConsoleViewer";
     public const string Author = "Neeko & Lunar (Asset) - PC Port. Penny & Davi - Original. OG - Benacle.";
-    public const string Version = "2.0.0";
+    public const string Version = "2.0.1";
     public const string DownloadLink = "https://github.com/PennyBunny/VRCMods/";
     public const string Description = "A standalone mod that adds a tab to your quick menu that has a simple copy of your console!";
 }
@@ -40,6 +40,7 @@ public class Main : MelonMod
 
     public override void OnApplicationStart()
     {
+        BundleManager.Init();
         ConsoleManager.AttachTrackers();
         _mlConsoleViewer = MelonPreferences.CreateCategory("MLConsoleViewer", "MLConsoleViewer");
         _fontSize = _mlConsoleViewer.CreateEntry("fontSize", 19, "Font Size",
@@ -79,7 +80,6 @@ public class Main : MelonMod
         }
         while (ReferenceEquals(MenuEx.Instance, null)) yield return null;
         
-        BundleManager.Init(); // NO idea why values get reset onAppStart
         UI.BuildTab();
     }
 }

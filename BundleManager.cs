@@ -21,5 +21,6 @@ internal static class BundleManager
         ConsolePrefab = bundle.LoadAsset_Internal("assets/bundledassets/console/console.prefab", Il2CppType.Of<GameObject>()).Cast<GameObject>(); //HardCoding asset
         icon = bundle.LoadAsset_Internal("assets/bundledassets/console/console.png", Il2CppType.Of<Sprite>()).Cast<Sprite>();
         bundle.hideFlags |= HideFlags.DontUnloadUnusedAsset;
+        icon.hideFlags |= HideFlags.DontUnloadUnusedAsset;
     }
 }
