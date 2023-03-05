@@ -7,7 +7,7 @@ A ported version to pc (Updated) of Davi & Penny original [MLConsoleViewer](http
 A rewrote and maintained version of Benacle's original [MLConsoleViewer](https://github.com/benaclejames/MLConsoleViewer) Mod
 
 
-<img src="https://ftp.uwuclara.dev/Screenshot_1.png" width="295"> <img src="https://ftp.uwuclara.dev/Screenshot_2.png" width="250">
+<img src="https://ftp.uwuclara.dev/68747470733a2f2f6674702e757775636c6172612e6465762f53637265656e73686f745f312e706e67.png" width="295"> <img src="https://ftp.uwuclara.dev/68747470733a2f2f6674702e757775636c6172612e6465762f53637265656e73686f745f322e706e67.png" width="250">
 
 
-![proof](https://ftp.uwuclara.dev/Screenshot_332.png)
+![proof](https://ftp.uwuclara.dev/68747470733a2f2f6674702e757775636c6172612e6465762f53637265656e73686f745f3333322e706e67.png)
